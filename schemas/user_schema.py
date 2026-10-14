@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr ,Field
+from pydantic import BaseModel, ConfigDict, EmailStr ,Field
 from datetime import datetime
 from models.enums import RolEnum
 
@@ -25,5 +25,4 @@ class UserResponse(BaseModel):
     active: bool
     register_date: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -14,3 +14,5 @@ env/
 # Bases de datos locales (si estás usando SQLite para testear)
 *.db
 *.sqlite3
+
+plan.md

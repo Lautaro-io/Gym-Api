@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 
 
@@ -16,8 +16,7 @@ class RoutineResponse(BaseModel):
     date_generated: date
     state: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -30,8 +29,7 @@ class RoutineExerciseDetail(BaseModel):
     rest: int
     exercise_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RoutineDetailResponse(BaseModel):
@@ -41,5 +39,4 @@ class RoutineDetailResponse(BaseModel):
     state: bool
     exercises: List[RoutineExerciseDetail]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
