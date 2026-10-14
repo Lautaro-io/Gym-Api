@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr ,Field
 from datetime import datetime
 from models.enums import RolEnum
@@ -18,7 +20,7 @@ class UserResponse(BaseModel):
     name :str
     lastname: str
     dni: str
-    phone: str
+    phone: Optional[str] = None
     rol: RolEnum
     active: bool
     register_date: datetime
