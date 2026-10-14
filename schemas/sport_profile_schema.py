@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 class SportProfileCreate(BaseModel):
@@ -22,5 +22,4 @@ class SportProfileResponse(BaseModel):
     injuries: Optional[str]
     trainer_tracking: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

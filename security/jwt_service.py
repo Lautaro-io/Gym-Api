@@ -13,15 +13,15 @@ from repositories.user_repository import UserRepository
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("No SECRET_KEY set in environment")
+
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def create_access_token(data: dict) -> str:
-    if not SECRET_KEY:
-        raise ValueError("No SECRET_KEY set for JWT generation")
-
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
@@ -48,7 +48,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido",
         )
-    user = UserRepository(db).get_by_id(int(user_id))
+    try:
+        user_id_int = int(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido",
+        )
+
+    user = UserRepository(db).get_by_id(user_id_int)
     if user is None:
         raise HTTPException(
             status_code=401,

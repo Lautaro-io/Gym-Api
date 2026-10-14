@@ -1,12 +1,14 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = (
-    "mssql+pyodbc://@localhost\\SQLEXPRESS/gym_api"
-    "?driver=ODBC+Driver+18+for+SQL+Server"
-    "&trusted_connection=yes"
-    "&TrustServerCertificate=yes"
-)
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("No DATABASE_URL set in environment")
 
 engine = create_engine(DATABASE_URL, echo=False)
 
