@@ -15,4 +15,6 @@ env/
 *.db
 *.sqlite3
 
+MEMORY.md
 plan.md
+req.md
