@@ -27,3 +27,11 @@ class UserResponse(BaseModel):
     register_date: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = Field(None, min_length=3, max_length=100)
+    lastname: Optional[str] = Field(None, min_length=3, max_length=100)
+    dni: Optional[str] = Field(None, min_length=7, max_length=9)
+    phone: Optional[str] = Field(None, min_length=9, max_length=15)
