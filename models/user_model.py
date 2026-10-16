@@ -2,7 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.orm import relationship
 
 from db import Base
-from models.enums import RolEnum
+from models.enums import RolEnum, UserStateEnum
 
 
 class User(Base):
@@ -15,7 +15,7 @@ class User(Base):
     email = Column(String(150), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     rol = Column(Enum(RolEnum), nullable=False, default=RolEnum.CLIENTE)
-    active = Column(Boolean, default=True)
+    state = Column(Enum(UserStateEnum), nullable=False, default=UserStateEnum.PENDIENTE_HABILITACION)
     register_date = Column(DateTime(timezone=True), server_default=func.now())
 
     routines = relationship("Routine", back_populates="user", cascade="all, delete-orphan")

@@ -9,6 +9,7 @@ class SportProfileCreate(BaseModel):
     session_duration: int = Field(..., gt=0) # in minutes
     age: int = Field(..., gt=10, le=100)
     injuries: Optional[str] = Field(None, max_length=255)
+    created_at: str = Field(..., min_length=10, max_length=50)
     trainer_tracking: bool = False
 
 class SportProfileResponse(BaseModel):
@@ -21,5 +22,5 @@ class SportProfileResponse(BaseModel):
     age: int
     injuries: Optional[str]
     trainer_tracking: bool
-
+    created_at: str
     model_config = ConfigDict(from_attributes=True)

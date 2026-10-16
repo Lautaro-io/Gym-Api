@@ -2,7 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr ,Field
 from datetime import datetime
-from models.enums import RolEnum
+from models.enums import RolEnum, UserStateEnum
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -22,7 +23,7 @@ class UserResponse(BaseModel):
     dni: str
     phone: Optional[str] = None
     rol: RolEnum
-    active: bool
+    state: UserStateEnum
     register_date: datetime
 
     model_config = ConfigDict(from_attributes=True)

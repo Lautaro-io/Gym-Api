@@ -7,6 +7,12 @@ class RolEnum(str, enum.Enum):
     CLIENTE = "cliente"
 
 
+class UserStateEnum(str, enum.Enum):
+    ACTIVO = "activo"
+    INACTIVO = "inactivo"
+    PENDIENTE_HABILITACION = "pendiente_habilitacion"
+    HABILITADO_ENTRENAR = "habilitado_entrenar"
+
 class MetodoPagoEnum(str, enum.Enum):
     TARJETA = "tarjeta"
     EFECTIVO = "efectivo"
