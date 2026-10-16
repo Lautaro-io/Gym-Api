@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from db import Base
 
@@ -16,5 +16,5 @@ class SportProfile(Base):
     age = Column(Integer, nullable=False)   
     injuries = Column(String(255), nullable=True)
     trainer_tracking = Column(Boolean, default=False)
-
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     user = relationship("User", back_populates="sport_profiles")

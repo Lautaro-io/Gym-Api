@@ -13,12 +13,11 @@ app.include_router(user_controller.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Mientras prueban en local, permití todos
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,  # o quitar esta línea (default False)
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 @app.get("/")
 def root():
     return {"message": "Api funcionando"}

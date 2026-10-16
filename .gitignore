@@ -5,6 +5,7 @@
 __pycache__/
 *.pyc
 *.pyo
+*.md
 
 # Archivos de entorno y secretos (buena práctica para tu API)
 .env
@@ -14,6 +15,7 @@ env/
 # Bases de datos locales (si estás usando SQLite para testear)
 *.db
 *.sqlite3
+
 
 MEMORY.md
 plan.md
