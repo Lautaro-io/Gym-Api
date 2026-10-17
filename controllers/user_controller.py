@@ -27,7 +27,6 @@ def get_user(id: int, current_user: User = Depends(require_admin), db: Session =
 def get_users(current_user: User = Depends(require_admin), db: Session = Depends(get_db)) -> list[UserResponse]:
     return UserService(UserRepository(db)).get_all_users()
 
-
 @router.patch("/{id}", response_model=UserResponse)
 def update_user(id: int, user_update: UserUpdate, current_user: User = Depends(require_admin),
                 db: Session = Depends(get_db)) -> UserResponse:
