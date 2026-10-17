@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
@@ -9,8 +11,16 @@ class SportProfileCreate(BaseModel):
     session_duration: int = Field(..., gt=0) # in minutes
     age: int = Field(..., gt=10, le=100)
     injuries: Optional[str] = Field(None, max_length=255)
-    created_at: str = Field(..., min_length=10, max_length=50)
     trainer_tracking: bool = False
+
+class SportProfileUpdate(BaseModel):
+    goal: Optional[str] = Field(None, min_length=3, max_length=100)
+    level: Optional[str] = Field(None, min_length=3, max_length=50)
+    days_per_week: Optional[int] = Field(None, gt=0, le=7)
+    session_duration: Optional[int] = Field(None, gt=0) # in minutes
+    age: Optional[int] = Field(None, gt=10, le=100)
+    injuries: Optional[str] = Field(None, max_length=255)
+    trainer_tracking: Optional[bool] = None
 
 class SportProfileResponse(BaseModel):
     id: int
@@ -22,5 +32,5 @@ class SportProfileResponse(BaseModel):
     age: int
     injuries: Optional[str]
     trainer_tracking: bool
-    created_at: str
+    created_at: datetime.datetime
     model_config = ConfigDict(from_attributes=True)
