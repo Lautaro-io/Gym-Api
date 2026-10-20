@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
@@ -10,6 +10,11 @@ class RoutineCreate(BaseModel):
     state: bool = True
 
 
+class RoutineUpdate(BaseModel):
+    date_generated: Optional[date] = None
+    state: Optional[bool] = None
+
+
 class RoutineResponse(BaseModel):
     id: int
     user_id: int
@@ -17,7 +22,6 @@ class RoutineResponse(BaseModel):
     state: bool
 
     model_config = ConfigDict(from_attributes=True)
-
 
 
 class RoutineExerciseDetail(BaseModel):
