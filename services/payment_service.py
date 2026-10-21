@@ -25,7 +25,7 @@ class PaymentService:
         user= self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        return self.payment_repository.get_by_id(user_id)
+        return self.payment_repository.get_by_user(user_id)
 
     def create_payment(self, payment_data: PaymentCreate) -> Payment:
         user = self.user_repository.get_by_id(payment_data.user_id)
