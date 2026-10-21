@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from controllers import auth_controller, user_controller, sport_profile_controller, routine_controller
+from controllers import auth_controller, user_controller, sport_profile_controller, routine_controller, payment_controller
 from db import init_db
 
 app = FastAPI()
@@ -12,6 +12,7 @@ app.include_router(auth_controller.router)
 app.include_router(user_controller.router)
 app.include_router(sport_profile_controller.router)
 app.include_router(routine_controller.router)
+app.include_router(payment_controller.router)
 
 app.add_middleware(
     CORSMiddleware,
