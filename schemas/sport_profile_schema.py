@@ -8,7 +8,7 @@ class SportProfileCreate(BaseModel):
     goal: str = Field(..., min_length=3, max_length=100)
     level: str = Field(..., min_length=3, max_length=50)
     days_per_week: int = Field(..., gt=0, le=7)
-    session_duration: int = Field(..., gt=0) # in minutes
+    session_duration: int = Field(..., gt=0)
     age: int = Field(..., gt=10, le=100)
     injuries: Optional[str] = Field(None, max_length=255)
     trainer_tracking: bool = False
@@ -17,7 +17,7 @@ class SportProfileUpdate(BaseModel):
     goal: Optional[str] = Field(None, min_length=3, max_length=100)
     level: Optional[str] = Field(None, min_length=3, max_length=50)
     days_per_week: Optional[int] = Field(None, gt=0, le=7)
-    session_duration: Optional[int] = Field(None, gt=0) # in minutes
+    session_duration: Optional[int] = Field(None, gt=0)
     age: Optional[int] = Field(None, gt=10, le=100)
     injuries: Optional[str] = Field(None, max_length=255)
     trainer_tracking: Optional[bool] = None
