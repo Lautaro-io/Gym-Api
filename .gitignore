@@ -1,18 +1,14 @@
-# IDEs
 .idea/
 
-# Compilados de Python
 __pycache__/
 *.pyc
 *.pyo
 *.md
 
-# Archivos de entorno y secretos (buena práctica para tu API)
 .env
 venv/
 env/
 
-# Bases de datos locales (si estás usando SQLite para testear)
 *.db
 *.sqlite3
 

@@ -25,7 +25,7 @@ app.include_router(exercise_controller.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,  # o quitar esta línea (default False)
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
