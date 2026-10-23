@@ -1,6 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from models.enums import MetodoPagoEnum
+
 
 class PaymentCreate(BaseModel):
     user_id: int = Field(..., gt=0)

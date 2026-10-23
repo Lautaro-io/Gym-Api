@@ -20,6 +20,8 @@ class ExerciseService:
         return self.exercise_repository.get_all_exercises(muscular_group)
 
     def create_exercise(self, exercise_data: ExerciseCreate) -> Exercise:
+        if self.exercise_repository.get_by_name(exercise_data.name):
+            raise HTTPException(status_code=409, detail=f"El ejercicio con el nombre '{exercise_data.name}' ya existe.")
         exercise = Exercise(**exercise_data.model_dump())
         return self.exercise_repository.create_new_exercise(exercise)
 

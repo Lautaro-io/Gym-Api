@@ -1,7 +1,7 @@
+from datetime import date
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-from datetime import date
 
 
 class RoutineCreate(BaseModel):

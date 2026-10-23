@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from models import User
 from models.enums import UserStateEnum
 from repositories.user_repository import UserRepository
-from schemas.user_schema import UserCreate, UserUpdate
+from schemas.user_schema import UserUpdate, UserRolUpdate
 
 
 class UserService:
@@ -22,12 +22,24 @@ class UserService:
     def create_user(self, user: User) -> User:
         return self.user_repository.create(user)
 
+    def update_user_rol(self, user_id: int, rol_update: UserRolUpdate) -> User:
+        user = self.user_repository.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not fousnd")
+
+        user.rol = rol_update.rol
+        return self.user_repository.update(user)
+
     def update_user(self, user_id: int, data: UserUpdate) -> User:
         user = self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
         changes = data.model_dump(exclude_unset=True)
+
+        for campo in ("email", "name", "lastname", "dni"):
+            if campo in changes and changes[campo] is None:
+                raise HTTPException(status_code=400, detail=f"El campo {campo} no puede ser null")
 
         if "email" in changes and changes["email"] != user.email:
             existing = self.user_repository.get_by_email(changes["email"])
@@ -60,4 +72,5 @@ class UserService:
         user = self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        self.user_repository.delete(user)
+        user.state = UserStateEnum.INACTIVO
+        self.user_repository.update(user)
