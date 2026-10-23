@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from db import Base
 from models.enums import MetodoPagoEnum
 

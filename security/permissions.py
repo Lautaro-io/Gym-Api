@@ -1,6 +1,8 @@
 from fastapi import Depends, HTTPException, status
+
 from models.user_model import User, RolEnum
 from security.jwt_service import get_current_user
+
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.rol != RolEnum.ADMIN:

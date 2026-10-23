@@ -9,7 +9,6 @@ from repositories.user_repository import UserRepository
 from schemas.payment_schema import PaymentCreate, PaymentResponse
 from security.jwt_service import get_current_user
 from security.permissions import require_admin
-from services import payment_service
 from services.payment_service import PaymentService
 
 router = APIRouter(tags=["Payment"], prefix="/payment")

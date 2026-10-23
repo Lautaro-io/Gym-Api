@@ -1,9 +1,9 @@
 from fastapi import HTTPException
+
 from models import Payment
-from repositories import payment_repository
-from schemas.payment_schema import PaymentCreate
 from repositories.payment_repository import PaymentRepository
 from repositories.user_repository import UserRepository
+from schemas.payment_schema import PaymentCreate
 
 
 class PaymentService:

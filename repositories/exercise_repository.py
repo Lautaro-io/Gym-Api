@@ -32,3 +32,6 @@ class ExerciseRepository:
     def delete_exercise(self, exercise: Exercise) -> None:
         self.db.delete(exercise)
         self.db.commit()
+
+    def get_by_name(self, name: str) -> Exercise | None:
+        return self.db.query(Exercise).filter(Exercise.name == name).first()

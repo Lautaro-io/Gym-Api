@@ -1,7 +1,8 @@
 import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional
+
 
 class SportProfileCreate(BaseModel):
     user_id: int = Field(..., gt=0)
