@@ -3,7 +3,6 @@
 __pycache__/
 *.pyc
 *.pyo
-*.md
 
 .env
 venv/
@@ -16,3 +15,4 @@ env/
 MEMORY.md
 plan.md
 req.md
+AGENTS.md
