@@ -3,6 +3,9 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from models.enums import DiaSemanaEnum
+from schemas.exercise_schema import ExerciseResponse
+
 
 class RoutineCreate(BaseModel):
     user_id: int = Field(..., gt=0)
@@ -26,12 +29,12 @@ class RoutineResponse(BaseModel):
 
 class RoutineExerciseDetail(BaseModel):
     id: int
-    day: str
+    day: DiaSemanaEnum
     sets: int
     repetitions: str
     position: int
     rest: int
-    exercise_id: int
+    exercise: ExerciseResponse
 
     model_config = ConfigDict(from_attributes=True)
 

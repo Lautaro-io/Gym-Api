@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, Numeric, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -12,7 +12,7 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
 
-    amount = Column(Float, nullable=False)
+    amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(Enum(MetodoPagoEnum), nullable=False)
 
     payment_date = Column(DateTime(timezone=True), server_default=func.now())
