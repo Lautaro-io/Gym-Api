@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Optional
-
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-
 from models.enums import RolEnum, UserStateEnum
 
 
@@ -33,6 +31,10 @@ class UserResponse(BaseModel):
 class UserRolUpdate(BaseModel):
     rol: RolEnum
 
+
+class UserPasswordUpdate(BaseModel):
+    old_password: str = Field(..., min_length=8, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None

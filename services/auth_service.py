@@ -43,6 +43,25 @@ class AuthService:
         return self.user_repository.create(user)
 
 
+    def update_password(self, user_id: int, old_password: str, new_password: str) -> User:
+        user = self.user_repository.get_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+        if not verify_password(old_password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Contraseña incorrecta"
+            )
+
+        hashed_new_password = hash_password(new_password)
+        user.hashed_password = hashed_new_password
+        self.user_repository.update(user)
+        return user
+
+
     def login(self, email: str, password: str) -> dict[str, str]:
         user = self.user_repository.get_by_email(email)
         if not user:

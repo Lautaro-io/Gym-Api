@@ -20,6 +20,16 @@ class MetodoPagoEnum(str, enum.Enum):
     MERCADO_PAGO = "mercado_pago"
 
 
+class DiaSemanaEnum(str, enum.Enum):
+    LUNES = "lunes"
+    MARTES = "martes"
+    MIERCOLES = "miercoles"
+    JUEVES = "jueves"
+    VIERNES = "viernes"
+    SABADO = "sabado"
+    DOMINGO = "domingo"
+
+
 class GrupoMuscularEnum(str, enum.Enum):
     PECHO = "pecho"
     ESPALDA = "espalda"

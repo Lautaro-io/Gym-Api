@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
-from models import Routine
+from models import Routine, RoutineExercise
 
 
 class RoutineRepository:
@@ -15,13 +15,27 @@ class RoutineRepository:
         return routine_create
 
     def get_all_routines(self) -> list[Routine]:
-        return self.db.query(Routine).all()
+        return (
+            self.db.query(Routine)
+            .options(selectinload(Routine.exercises).selectinload(RoutineExercise.exercise))
+            .all()
+        )
 
     def get_by_id(self, routine_id: int) -> Routine | None:
-        return self.db.query(Routine).filter(Routine.id == routine_id).first()
+        return (
+            self.db.query(Routine)
+            .options(selectinload(Routine.exercises).selectinload(RoutineExercise.exercise))
+            .filter(Routine.id == routine_id)
+            .first()
+        )
 
     def get_by_user(self, user_id: int) -> list[Routine]:
-        return self.db.query(Routine).filter(Routine.user_id == user_id).all()
+        return (
+            self.db.query(Routine)
+            .options(selectinload(Routine.exercises).selectinload(RoutineExercise.exercise))
+            .filter(Routine.user_id == user_id)
+            .all()
+        )
 
     def update_routine(self, routine: Routine) -> Routine:
         self.db.commit()

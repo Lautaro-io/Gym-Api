@@ -87,9 +87,36 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 1. Crear una base de datos vacía en SQL Server (por ejemplo `gym_api`).
 2. Apuntar `DATABASE_URL` a esa base.
-3. Al iniciar la aplicación se crean las tablas faltantes automáticamente (`init_db()` → `create_all`).
+3. Aplicar las migraciones:
 
-> El proyecto no usa migraciones: `create_all` crea tablas nuevas, pero **no modifica tablas existentes**. Si se agrega o cambia una columna, hay que aplicar el `ALTER TABLE` manualmente.
+```powershell
+.\.venv\Scripts\alembic.exe upgrade head
+```
+
+> Las migraciones están versionadas con **Alembic** y configuradas en `alembic/env.py`, que toma `DATABASE_URL` del `.env`.
+
+## Migraciones (Alembic)
+
+Comandos habituales:
+
+```powershell
+# Aplicar todas las migraciones pendientes
+.\.venv\Scripts\alembic.exe upgrade head
+
+# Ver la revisión actual de la base
+.\.venv\Scripts\alembic.exe current
+
+# Crear una migración a partir de los cambios en los modelos
+.\.venv\Scripts\alembic.exe revision --autogenerate -m "descripcion del cambio"
+
+# Revertir la última migración
+.\.venv\Scripts\alembic.exe downgrade -1
+```
+
+Revisar siempre el archivo generado en `alembic/versions/` antes de aplicarlo: el autogenerate puede incluir drift conocido del esquema actual (`user.active`, `sport_profile.created_at` y la representación del enum `user.state`) que no debe aplicarse.
+
+> La base existente se marcó con `alembic stamp head` para tomarla como punto de partida (baseline vacío). Para una base nueva creada con `create_all`, ejecutar `alembic stamp head` una vez.
+
 
 ## Ejecución
 
@@ -216,6 +243,8 @@ Campos de un ejercicio de rutina:
 
 Métodos de pago válidos: `tarjeta`, `efectivo`, `transferencia`, `mercado_pago`.
 
+Los importes se guardan como `NUMERIC(10, 2)` y se devuelven en el JSON como string decimal (por ejemplo `"1500.50"`) para evitar errores de redondeo.
+
 ## Ejemplos de uso
 
 ### Registro
@@ -314,6 +343,6 @@ Arquitectura en capas: `controllers → services → repositories → models`. L
 - **Enums**: SQLAlchemy guarda los enums por *nombre* (`ADMIN`, `PENDIENTE_HABILITACION`, `PECHO`), mientras que la API los expone por *valor* en minúscula (`admin`, `pendiente_habilitacion`, `pecho`). En SQL manual hay que usar los nombres en mayúscula.
 - **`user` es palabra reservada**: en SQL crudo debe citarse como `[user]`.
 - **Baja de usuarios**: `DELETE /users/{id}` no elimina el registro; lo pasa a `inactivo` para conservar pagos y rutinas. Se puede reactivar con `PATCH /users/{id}/habilitar`.
-- **Sin migraciones**: `create_all` no altera tablas existentes; los cambios de esquema se aplican a mano.
+- **Sin migraciones manuales**: los cambios de esquema se versionan con Alembic (`alembic/versions/`). `create_all` solo crea tablas faltantes; para bases existentes usar `alembic stamp head`.
 - **CORS**: habilitado para todos los orígenes (configuración de desarrollo).
 - El proyecto no incluye todavía una suite de tests automatizados.
