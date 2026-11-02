@@ -6,7 +6,6 @@ os.environ.setdefault("SECRET_KEY", "clave-secreta-de-prueba-isft-194-testing-20
 os.environ.setdefault("ALGORITHM", "HS256")
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -14,9 +13,9 @@ from sqlalchemy.pool import StaticPool
 import db as db_module
 from models import Exercise, SportProfile, User
 from models.enums import GrupoMuscularEnum, RolEnum, UserStateEnum
-from security.jwt_service import create_access_token
+from security.jwt_service import get_current_user
 
-# Engine SQLite en memoria compartido entre hilos para TestClient
+# Engine SQLite en memoria compartido para TestClient
 TEST_ENGINE = create_engine(
     "sqlite://",
     connect_args={"check_same_thread": False},
@@ -24,22 +23,41 @@ TEST_ENGINE = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=TEST_ENGINE)
 
-# Reemplazamos el engine de db antes de importar main (que ejecuta init_db())
 db_module.engine = TEST_ENGINE
 db_module.SessionLocal = TestingSessionLocal
 
 from main import app  # noqa: E402
 
 
-@pytest.fixture()
-def db_session():
-    """Reinicia las tablas en cada test y carga datos semilla básicos."""
+def override_get_db():
+    session = TestingSessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def override_get_current_user():
+    session = TestingSessionLocal()
+    try:
+        return session.query(User).filter(User.id == 1).first()
+    finally:
+        session.close()
+
+
+app.dependency_overrides[db_module.get_db] = override_get_db
+app.dependency_overrides[get_current_user] = override_get_current_user
+
+
+@pytest.fixture(autouse=True)
+def setup_database():
+    """Reinicia las tablas antes de cada test y carga datos iniciales."""
     db_module.Base.metadata.drop_all(bind=TEST_ENGINE)
     db_module.Base.metadata.create_all(bind=TEST_ENGINE)
 
     session = TestingSessionLocal()
     try:
-        admin_user = User(
+        usuario_inicial = User(
             id=1,
             dni="11111111",
             name="Admin",
@@ -50,41 +68,15 @@ def db_session():
             rol=RolEnum.ADMIN,
             state=UserStateEnum.ACTIVO,
         )
-        profesor_user = User(
-            id=2,
-            dni="22222222",
-            name="Profe",
-            lastname="Entrenador",
-            phone="1100000002",
-            email="profe@gymsass.com",
-            hashed_password="hashed_password",
-            rol=RolEnum.PROFESOR,
-            state=UserStateEnum.ACTIVO,
-        )
-        cliente_user = User(
-            id=3,
-            dni="33333333",
-            name="Juan",
-            lastname="Perez",
-            phone="1100000003",
-            email="cliente@gymsass.com",
-            hashed_password="hashed_password",
-            rol=RolEnum.CLIENTE,
-            state=UserStateEnum.HABILITADO_ENTRENAR,
-        )
-        session.add_all([admin_user, profesor_user, cliente_user])
-
         ejercicio_inicial = Exercise(
             id=1,
             name="Press de banca",
             description="Press plano con barra olímpica",
             muscular_group=GrupoMuscularEnum.PECHO,
         )
-        session.add(ejercicio_inicial)
-
         perfil_inicial = SportProfile(
             id=1,
-            user_id=3,
+            user_id=1,
             goal="Hipertrofia muscular",
             level="Intermedio",
             days_per_week=4,
@@ -93,42 +85,8 @@ def db_session():
             injuries="Ninguna",
             trainer_tracking=True,
         )
-        session.add(perfil_inicial)
+        session.add_all([usuario_inicial, ejercicio_inicial, perfil_inicial])
         session.commit()
-
-        yield session
+        yield
     finally:
         session.close()
-
-
-@pytest.fixture()
-def client(db_session):
-    """Cliente de pruebas de FastAPI conectado a la sesión SQLite en memoria."""
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-
-    app.dependency_overrides[db_module.get_db] = override_get_db
-    with TestClient(app) as test_client:
-        yield test_client
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture()
-def auth_headers_admin():
-    token = create_access_token({"sub": "1"})
-    return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture()
-def auth_headers_profesor():
-    token = create_access_token({"sub": "2"})
-    return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture()
-def auth_headers_cliente():
-    token = create_access_token({"sub": "3"})
-    return {"Authorization": f"Bearer {token}"}
