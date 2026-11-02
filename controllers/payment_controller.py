@@ -10,6 +10,7 @@ from schemas.payment_schema import PaymentCreate, PaymentResponse
 from security.jwt_service import get_current_user
 from security.permissions import require_admin
 from services.payment_service import PaymentService
+from schemas.payment_schema import MembershipStatusResponse, PaymentCreate,PaymentResponse
 
 router = APIRouter(tags=["Payment"], prefix="/payment")
 
@@ -30,7 +31,18 @@ def get_my_payments(current_user: User = Depends(get_current_user), db: Session 
     payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
     return payment_service.get_payment_by_user(current_user.id)
 
+@router.get("/me/status", response_model=MembershipStatusResponse, status_code=status.HTTP_200_OK)
+def get_my_membership_status(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> MembershipStatusResponse:
+    payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
+    return payment_service.get_membership_status(current_user.id)
+
+@router.get("/{id}/status", response_model=MembershipStatusResponse, status_code=status.HTTP_200_OK)
+def get_user_membership_status(id: int, current_user: User = Depends(require_admin), db : Session = Depends (get_db)) ->MembershipStatusResponse:
+    payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
+    return payment_service.get_membership_status(id)
+
 @router.get("/{id}", response_model=PaymentResponse, status_code=status.HTTP_200_OK)
 def get_payment_by_id(id:int, current_user: User = Depends(require_admin), db: Session = Depends(get_db)):
     payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
     return payment_service.get_payment(id)
+

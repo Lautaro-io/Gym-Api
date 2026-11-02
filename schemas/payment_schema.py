@@ -21,3 +21,8 @@ class PaymentResponse(BaseModel):
     expiration_date: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class MembershipStatusResponse(BaseModel):
+    vigente: bool
+    expiration_date: datetime | None
+    dias_restantes: int | None
