@@ -1,11 +1,4 @@
-from fastapi.testclient import TestClient
-# Suponiendo que tu app principal se llama 'app' y está en 'main.py'
-from main import app
-
-client = TestClient(app)
-
-
-def test_create_sport_profile():
+def test_create_sport_profile(client):
     # 1. Preparamos los datos válidos que vamos a enviar
     payload = {
         "user_id": 1,
@@ -27,7 +20,7 @@ def test_create_sport_profile():
     assert response.json()["user_id"] == 1
 
 
-def test_get_sport_profile():
+def test_get_sport_profile(client):
     # 1. Hacemos la petición GET a un perfil deportivo existente (ej: id 1)
     response = client.get("/sport-profiles/1")
 
@@ -37,7 +30,7 @@ def test_get_sport_profile():
     assert response.json()["goal"] == "Hipertrofia muscular"
 
 
-def test_create_sport_profile_invalid_data():
+def test_create_sport_profile_invalid_data(client):
     # 1. Intentamos crear un perfil con días por semana (> 7) y edad inválida (<= 10)
     payload = {
         "user_id": 1,
@@ -57,7 +50,7 @@ def test_create_sport_profile_invalid_data():
     assert response.status_code == 422
 
 
-def test_create_sport_profile_user_not_found():
+def test_create_sport_profile_user_not_found(client):
     # 1. Intentamos crear un perfil deportivo para un usuario inexistente (ej: user_id 999)
     payload = {
         "user_id": 999,
@@ -78,7 +71,7 @@ def test_create_sport_profile_user_not_found():
     assert response.json()["detail"] == "User not found"
 
 
-def test_get_sport_profile_not_found():
+def test_get_sport_profile_not_found(client):
     # 1. Hacemos la petición GET a un perfil deportivo inexistente (ej: id 999)
     response = client.get("/sport-profiles/999")
 
@@ -87,7 +80,7 @@ def test_get_sport_profile_not_found():
     assert response.json()["detail"] == "Sport profile not found"
 
 
-def test_update_sport_profile():
+def test_update_sport_profile(client):
     # 1. Preparamos los datos que vamos a actualizar en el perfil (ej: id 1)
     payload = {
         "days_per_week": 5,
@@ -103,7 +96,7 @@ def test_update_sport_profile():
     assert response.json()["injuries"] == "Molestia lumbar leve"
 
 
-def test_delete_sport_profile():
+def test_delete_sport_profile(client):
     # 1. Hacemos la petición DELETE a un perfil existente (ej: id 1)
     response = client.delete("/sport-profiles/1")
 

@@ -14,6 +14,8 @@ Backend construido con **FastAPI + SQLAlchemy 2** sobre **SQL Server**, con aute
 - Catálogo de ejercicios por grupo muscular, con carga masiva desde un script.
 - Rutinas asignadas a socios, con ejercicios, series, repeticiones, descansos y orden.
 - Registro de pagos e historial por socio.
+- Consulta del estado de la membresía (vigente o vencida) y días restantes.
+- Scripts de carga inicial: primer administrador y catálogo de ejercicios.
 
 ## Tecnologías
 
@@ -138,7 +140,7 @@ La API queda disponible en:
 |---|---|
 | `admin` | Acceso total: usuarios, roles, habilitaciones, perfiles deportivos, pagos, ejercicios y rutinas. |
 | `profesor` | Puede leer el listado de socios y gestionar ejercicios, rutinas y sus ejercicios. No puede editar usuarios, roles ni pagos. Los `admin` también pasan estos permisos. |
-| `cliente` | Acceso a sus propios datos: `GET/PATCH /users/me`, `GET /sport-profiles/me`, `GET /routines/me`, `GET /payment/me`. Puede leer ejercicios. |
+| `cliente` | Acceso a sus propios datos: `GET/PATCH /users/me`, `GET /sport-profiles/me`, `GET /routines/me`, `GET /payment/me`, `GET /payment/me/status`. Puede leer ejercicios y los ejercicios de cualquier rutina. |
 
 ### Detalle por operación
 
@@ -146,7 +148,7 @@ La API queda disponible en:
 - **Perfiles deportivos**: escritura y listados solo `admin`; el cliente lee los suyos en `/sport-profiles/me`.
 - **Ejercicios**: lectura para cualquier usuario autenticado; alta/edición/baja para `profesor` y `admin`.
 - **Rutinas**: alta/edición/baja para `profesor` y `admin`; el cliente consulta las suyas.
-- **Pagos**: alta y consultas generales solo `admin`; el cliente consulta su historial en `/payment/me`.
+- **Pagos**: alta y consultas generales solo `admin`; el cliente consulta su historial en `/payment/me` y su estado en `/payment/me/status`. El estado de cualquier socio lo consulta el `admin`.
 
 ## Endpoints
 
@@ -156,6 +158,7 @@ La API queda disponible en:
 |---|---|---|---|
 | `POST` | `/auth/register` | Público | Registro de socio. Crea el usuario con rol `cliente` y estado `pendiente_habilitacion`. |
 | `POST` | `/auth/login` | Público | Login con form data OAuth2 (`username=<email>`, `password=<clave>`). Devuelve `access_token`. |
+| `PATCH` | `/auth/password` | Autenticado | Cambia la contraseña propia (`old_password` y `new_password`). |
 
 ### Usuarios
 
@@ -208,7 +211,7 @@ Grupos musculares válidos: `pecho`, `espalda`, `pierna`, `hombro`, `biceps`, `t
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| `GET` | `/routines/{routine_id}/exercises` | `profesor` / `admin` | Lista los ejercicios de la rutina. |
+| `GET` | `/routines/{routine_id}/exercises` | Autenticado | Lista los ejercicios de la rutina. |
 | `POST` | `/routines/{routine_id}/exercises` | `profesor` / `admin` | Agrega un ejercicio a la rutina. |
 | `PATCH` | `/routines/{routine_id}/exercises/{id}` | `profesor` / `admin` | Actualiza series, repeticiones, descanso, día u orden. |
 | `DELETE` | `/routines/{routine_id}/exercises/{id}` | `profesor` / `admin` | Quita un ejercicio de la rutina. |
@@ -237,6 +240,8 @@ Campos de un ejercicio de rutina:
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
 | `GET` | `/payment/me` | Autenticado | Historial de pagos del usuario logueado. |
+| `GET` | `/payment/me/status` | Autenticado | Estado de la membresía propia (`vigente`, `expiration_date`, `dias_restantes`). |
+| `GET` | `/payment/{id}/status` | `admin` | Estado de la membresía de un socio. |
 | `GET` | `/payment` | `admin` | Lista todos los pagos. |
 | `GET` | `/payment/{id}` | `admin` | Detalle de un pago. |
 | `POST` | `/payment` | `admin` | Registra un pago para un socio. |
@@ -297,7 +302,15 @@ curl -X POST http://127.0.0.1:8000/routines/1/exercises \
 
 ## Primer administrador
 
-El registro crea siempre usuarios `cliente`. Para designar al primer administrador hay que actualizarlo directamente en la base:
+El registro crea siempre usuarios `cliente`. Para crear el primer administrador hay un script idempotente:
+
+```powershell
+.\.venv\Scripts\python.exe seed_admin.py
+```
+
+Crea `admin@gymsass.com` con contraseña `Admin1234!` (cambiala con `PATCH /auth/password`). Se puede personalizar con variables de entorno: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`, `ADMIN_LASTNAME`, `ADMIN_DNI`, `ADMIN_PHONE`. Si ya existe un usuario con ese email, DNI o teléfono, no crea nada.
+
+Si preferís designar como admin a un usuario ya registrado, también sirve el SQL:
 
 ```sql
 UPDATE [user] SET rol = 'ADMIN' WHERE email = 'admin@example.com';
@@ -319,6 +332,20 @@ Salida esperada:
 Ejercicios creados: 47 | saltados (ya existían): 0
 ```
 
+## Tests
+
+Los tests usan `TestClient` con una base **SQLite en memoria**, así que no necesitan SQL Server ni un `.env` válido: `tests/conftest.py` configura las variables de entorno y crea las tablas antes de cada test.
+
+```powershell
+# Toda la suite
+.\.venv\Scripts\python.exe -m pytest -q
+
+# Un módulo
+.\.venv\Scripts\python.exe -m pytest tests/test_auth_controller.py -q
+```
+
+Cubren autenticación, usuarios y permisos, ejercicios, perfiles deportivos y ejercicios de rutina. Cada test arranca con la base limpia y datos iniciales (admin, profesor, cliente y un ejercicio).
+
 ## Estructura del proyecto
 
 ```
@@ -329,8 +356,11 @@ GymApi/
 ├── models/           # Modelos ORM
 ├── schemas/          # Schemas Pydantic (entrada/salida)
 ├── security/         # JWT y permisos por rol
+├── tests/            # Suite de tests con pytest
+├── alembic/          # Migraciones de esquema
 ├── db.py             # Conexión, sesión e init_db()
 ├── main.py           # Aplicación FastAPI y registro de routers
+├── seed_admin.py     # Carga inicial del primer administrador
 ├── seed_exercises.py # Carga inicial de ejercicios
 ├── requirements.txt
 └── .env.example
@@ -345,4 +375,4 @@ Arquitectura en capas: `controllers → services → repositories → models`. L
 - **Baja de usuarios**: `DELETE /users/{id}` no elimina el registro; lo pasa a `inactivo` para conservar pagos y rutinas. Se puede reactivar con `PATCH /users/{id}/habilitar`.
 - **Sin migraciones manuales**: los cambios de esquema se versionan con Alembic (`alembic/versions/`). `create_all` solo crea tablas faltantes; para bases existentes usar `alembic stamp head`.
 - **CORS**: habilitado para todos los orígenes (configuración de desarrollo).
-- El proyecto no incluye todavía una suite de tests automatizados.
+- **Tests**: `pytest` sobre SQLite en memoria (ver [Tests](#tests)); no requieren SQL Server.

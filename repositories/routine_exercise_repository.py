@@ -28,7 +28,7 @@ class RoutineExerciseRepository:
     def get_by_routine_and_day(self, routine_id: int, day: DiaSemanaEnum) -> list[RoutineExercise]:
         return (
             self.db.query(RoutineExercise)
-            .filter(RoutineExercise.routine_id == routine_id, RoutineExercise.day == day.value)
+            .filter(RoutineExercise.routine_id == routine_id, RoutineExercise.day == day)
             .order_by(RoutineExercise.position)
             .all()
         )

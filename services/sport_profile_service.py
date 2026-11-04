@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 
 from models import SportProfile
+from models.enums import UserStateEnum
 from repositories.sport_profile_repository import SportProfileRepository
 from repositories.user_repository import UserRepository
 from schemas.sport_profile_schema import SportProfileCreate, SportProfileUpdate
@@ -31,6 +32,8 @@ class SportProfileService:
         user = self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        if user.state != UserStateEnum.HABILITADO_ENTRENAR:
+            raise HTTPException(status_code=409, detail="User is not enabled to create sport profiles")
         sport_profile = SportProfile(**sport_data.model_dump())
         return self.sport_profile_repository.create_new_profile(sport_profile)
 
