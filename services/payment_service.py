@@ -1,11 +1,10 @@
 from fastapi import HTTPException
-from sqlalchemy.sql.functions import user
-
 from models import Payment
 from repositories.payment_repository import PaymentRepository
 from repositories.user_repository import UserRepository
-from schemas.payment_schema import PaymentCreate
+from schemas.payment_schema import MembershipStatusResponse, PaymentCreate
 from datetime import datetime, timezone
+from math import ceil
 
 
 class PaymentService:
@@ -33,21 +32,29 @@ class PaymentService:
         user = self.user_repository.get_by_id(payment_data.user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        if self._as_utc(payment_data.expiration_date) <= datetime.now(timezone.utc):
+            raise HTTPException(status_code=422, detail="expiration_date must be in the future")
         payment = Payment(**payment_data.model_dump())
         return self.payment_repository.create_payment(payment)
 
-    def get_membership_status(self, user_id : int) ->dict:
-        user =self.user_repository.get_by_id(user_id)
+    def get_membership_status(self, user_id : int) -> MembershipStatusResponse:
+        user = self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-
-        last = self.payment_repository.get_last_by_user(user_id)
-        if not last:
-            return{"vigente": False, "expiration_date": None, "dias_restantes": None}
-
-        exp = last.expiration_date
-        if exp.tinfo is None:
-            exp = exp.replace(tzinfo=timezone.utc)
-
+        current_payment = self.payment_repository.get_max_expiration_by_user(user_id)
+        if not current_payment:
+            return MembershipStatusResponse(vigente=False, expiration_date=None, dias_restantes=0)
+        expiration = self._as_utc(current_payment.expiration_date)
         now = datetime.now(timezone.utc)
-        return{ "vigente": exp >= now, "expiration_date": exp, "dias_restantes": (exp - now).days}
+        remaining_seconds = (expiration - now).total_seconds()
+        return MembershipStatusResponse(
+            vigente=remaining_seconds > 0,
+            expiration_date=expiration,
+            dias_restantes=max(0, ceil(remaining_seconds / 86400)),
+        )
+
+    @staticmethod
+    def _as_utc(value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)

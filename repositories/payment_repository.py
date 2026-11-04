@@ -22,6 +22,6 @@ class PaymentRepository:
     def get_by_user(self, user_id: int) -> list[Payment]:
         return self.db.query(Payment).filter(Payment.user_id == user_id).all()
 
-    def get_last_by_user(self, user_id: int) -> Payment | None:
+    def get_max_expiration_by_user(self, user_id: int) -> Payment | None:
         return self.db.query(Payment).filter(Payment.user_id==user_id).order_by(Payment.expiration_date.desc()).first()
 

@@ -1,11 +1,4 @@
-from fastapi.testclient import TestClient
-# Suponiendo que tu app principal se llama 'app' y está en 'main.py'
-from main import app
-
-client = TestClient(app)
-
-
-def test_create_exercise():
+def test_create_exercise(client):
     # 1. Preparamos los datos válidos que vamos a enviar
     payload = {
         "name": "Sentadilla libre",
@@ -22,7 +15,7 @@ def test_create_exercise():
     assert response.json()["muscular_group"] == "pierna"
 
 
-def test_get_exercise():
+def test_get_exercise(client):
     # 1. Hacemos la petición GET a un ejercicio existente (ej: id 1)
     response = client.get("/exercises/1")
 
@@ -32,7 +25,7 @@ def test_get_exercise():
     assert response.json()["muscular_group"] == "pecho"
 
 
-def test_create_exercise_duplicate_name():
+def test_create_exercise_duplicate_name(client):
     # 1. Intentamos crear un ejercicio con un nombre que ya existe
     payload = {
         "name": "Press de banca",
@@ -48,7 +41,7 @@ def test_create_exercise_duplicate_name():
     assert "ya existe" in response.json()["detail"]
 
 
-def test_create_exercise_invalid_data():
+def test_create_exercise_invalid_data(client):
     # 1. Intentamos crear un ejercicio con nombre vacío y grupo muscular inválido
     payload = {
         "name": "",
@@ -63,7 +56,7 @@ def test_create_exercise_invalid_data():
     assert response.status_code == 422
 
 
-def test_get_exercise_not_found():
+def test_get_exercise_not_found(client):
     # 1. Hacemos la petición GET a un ejercicio inexistente (ej: id 999)
     response = client.get("/exercises/999")
 
@@ -72,7 +65,7 @@ def test_get_exercise_not_found():
     assert response.json()["detail"] == "Exercise not found"
 
 
-def test_update_exercise():
+def test_update_exercise(client):
     # 1. Preparamos los campos que queremos actualizar del ejercicio (ej: id 1)
     payload = {
         "description": "Press plano con mancuernas",
@@ -86,7 +79,7 @@ def test_update_exercise():
     assert response.json()["description"] == "Press plano con mancuernas"
 
 
-def test_delete_exercise():
+def test_delete_exercise(client):
     # 1. Hacemos la petición DELETE a un ejercicio existente (ej: id 1)
     response = client.delete("/exercises/1")
 

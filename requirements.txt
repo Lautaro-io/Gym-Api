@@ -11,5 +11,8 @@ PyJWT==2.15.1
 pwdlib[argon2]==0.3.1
 argon2-cffi==25.1.0
 email-validator==2.3.0
+pydantic==2.13.5
 
-pydantic
+# Tests (TestClient de Starlette + pytest)
+httpx2==2.16.0
+pytest==9.2.0
