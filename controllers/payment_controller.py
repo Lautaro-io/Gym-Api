@@ -46,3 +46,8 @@ def get_payment_by_id(id:int, current_user: User = Depends(require_admin), db: S
     payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
     return payment_service.get_payment(id)
 
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_payment(id: int, current_user: User = Depends(require_admin), db: Session = Depends(get_db)) -> None:
+    payment_service = PaymentService(PaymentRepository(db), UserRepository(db))
+    payment_service.delete_payment(id)
+

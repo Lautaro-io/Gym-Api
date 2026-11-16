@@ -25,3 +25,7 @@ class PaymentRepository:
     def get_max_expiration_by_user(self, user_id: int) -> Payment | None:
         return self.db.query(Payment).filter(Payment.user_id==user_id).order_by(Payment.expiration_date.desc()).first()
 
+    def delete_payment(self, payment: Payment) -> None:
+        self.db.delete(payment)
+        self.db.commit()
+
