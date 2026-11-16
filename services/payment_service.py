@@ -37,6 +37,12 @@ class PaymentService:
         payment = Payment(**payment_data.model_dump())
         return self.payment_repository.create_payment(payment)
 
+    def delete_payment(self, payment_id: int) -> None:
+        payment = self.payment_repository.get_by_id(payment_id)
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment not found")
+        self.payment_repository.delete_payment(payment)
+
     def get_membership_status(self, user_id : int) -> MembershipStatusResponse:
         user = self.user_repository.get_by_id(user_id)
         if not user:
