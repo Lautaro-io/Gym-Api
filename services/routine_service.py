@@ -1,20 +1,26 @@
 from fastapi import HTTPException
 
-from models import Routine
+from models import Routine, User
+from models.user_model import RolEnum
 from repositories.routine_repository import RoutineRepository
+from repositories.sport_profile_repository import SportProfileRepository
 from repositories.user_repository import UserRepository
 from schemas.routine_schema import RoutineCreate, RoutineUpdate
 
 
 class RoutineService:
-    def __init__(self, routine_repository: RoutineRepository, user_repository: UserRepository):
+    def __init__(self, routine_repository: RoutineRepository, user_repository: UserRepository,
+                 sport_profile_repository: SportProfileRepository):
         self.routine_repository = routine_repository
         self.user_repository = user_repository
+        self.sport_profile_repository = sport_profile_repository
 
-    def get_routine(self, routine_id: int) -> Routine | None:
+    def get_routine(self, routine_id: int, current_user: User) -> Routine | None:
         routine = self.routine_repository.get_by_id(routine_id)
         if not routine:
             raise HTTPException(status_code=404, detail="Routine not found")
+        if routine.user_id != current_user.id and current_user.rol not in [RolEnum.PROFESOR, RolEnum.ADMIN]:
+            raise HTTPException(status_code=403, detail="No tenés permisos para ver esta rutina")
         return routine
 
     def get_routines_by_user(self, user_id: int) -> list[Routine]:
@@ -30,6 +36,8 @@ class RoutineService:
         user = self.user_repository.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        if not self.sport_profile_repository.get_by_user(user_id):
+            raise HTTPException(status_code=409, detail="El usuario no tiene un perfil deportivo")
         routine = Routine(**routine_data.model_dump())
         return self.routine_repository.create_new_routine(routine)
 

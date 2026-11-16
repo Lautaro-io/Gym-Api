@@ -98,6 +98,19 @@ def test_create_routine_user_not_found(client):
     assert response.json()["detail"] == "User not found"
 
 
+def test_create_routine_user_without_sport_profile(client):
+    # 1. Dejamos al cliente sin perfil deportivo
+    response = client.delete("/sport-profiles/3")
+    assert response.status_code == 204
+
+    # 2. Intentamos crear una rutina para él
+    response = client.post("/routines", json=_payload(user_id=3))
+
+    # 3. Comprobamos que se rechaza con 409
+    assert response.status_code == 409
+    assert response.json()["detail"] == "El usuario no tiene un perfil deportivo"
+
+
 def test_create_routine_invalid_user_id(client):
     # 1. Enviamos user_id en 0 (el schema exige > 0)
     response = client.post("/routines", json=_payload(user_id=0))
