@@ -111,7 +111,32 @@ def setup_database():
             injuries="Ninguna",
             trainer_tracking=True,
         )
-        session.add_all([admin, profesor, cliente, ejercicio_inicial, perfil_inicial])
+        perfil_profesor = SportProfile(
+            id=2,
+            user_id=PROFESOR_ID,
+            goal="Fuerza",
+            level="Avanzado",
+            days_per_week=5,
+            session_duration=75,
+            age=35,
+            injuries="Ninguna",
+            trainer_tracking=True,
+        )
+        perfil_cliente = SportProfile(
+            id=3,
+            user_id=CLIENTE_ID,
+            goal="Definición muscular",
+            level="Principiante",
+            days_per_week=3,
+            session_duration=45,
+            age=28,
+            injuries="Ninguna",
+            trainer_tracking=False,
+        )
+        session.add_all([
+            admin, profesor, cliente, ejercicio_inicial,
+            perfil_inicial, perfil_profesor, perfil_cliente,
+        ])
         session.commit()
         yield
     finally:

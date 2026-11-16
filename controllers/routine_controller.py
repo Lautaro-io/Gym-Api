@@ -5,6 +5,7 @@ from starlette import status
 from db import get_db
 from models import User
 from repositories.routine_repository import RoutineRepository
+from repositories.sport_profile_repository import SportProfileRepository
 from repositories.user_repository import UserRepository
 from schemas.routine_schema import (
     RoutineCreate,
@@ -25,7 +26,7 @@ def create_routine(
     current_user: User = Depends(require_profesor),
     db: Session = Depends(get_db),
 ) -> RoutineResponse:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
     return routine_service.create_routine(routine_data.user_id, routine_data)
 
 
@@ -34,7 +35,7 @@ def get_routines(
     current_user: User = Depends(require_profesor),
     db: Session = Depends(get_db),
 ) -> list[RoutineResponse]:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
     return routine_service.get_all_routines()
 
 
@@ -43,7 +44,7 @@ def get_my_routines(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[RoutineDetailResponse]:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
     return routine_service.get_routines_by_user(current_user.id)
 
 
@@ -53,8 +54,8 @@ def get_routine(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> RoutineDetailResponse:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
-    return routine_service.get_routine(id)
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
+    return routine_service.get_routine(id, current_user)
 
 
 @router.patch("/{id}", response_model=RoutineResponse)
@@ -64,7 +65,7 @@ def update_routine(
     current_user: User = Depends(require_profesor),
     db: Session = Depends(get_db),
 ) -> RoutineResponse:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
     return routine_service.update_routine(id, routine_data)
 
 
@@ -74,5 +75,5 @@ def delete_routine(
     current_user: User = Depends(require_profesor),
     db: Session = Depends(get_db),
 ) -> None:
-    routine_service = RoutineService(RoutineRepository(db), UserRepository(db))
+    routine_service = RoutineService(RoutineRepository(db), UserRepository(db), SportProfileRepository(db))
     routine_service.delete_routine(id)

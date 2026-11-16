@@ -3,6 +3,11 @@ from models import RoutineExercise
 from models.enums import DiaSemanaEnum
 
 
+def _day_value(day: DiaSemanaEnum | str) -> str:
+    """Normaliza el día: el schema manda el enum, la BD devuelve str."""
+    return day.value if isinstance(day, DiaSemanaEnum) else day
+
+
 class RoutineExerciseRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -25,28 +30,28 @@ class RoutineExerciseRepository:
             .all()
         )
 
-    def get_by_routine_and_day(self, routine_id: int, day: DiaSemanaEnum) -> list[RoutineExercise]:
+    def get_by_routine_and_day(self, routine_id: int, day: DiaSemanaEnum | str) -> list[RoutineExercise]:
         return (
             self.db.query(RoutineExercise)
-            .filter(RoutineExercise.routine_id == routine_id, RoutineExercise.day == day)
+            .filter(RoutineExercise.routine_id == routine_id, RoutineExercise.day == _day_value(day))
             .order_by(RoutineExercise.position)
             .all()
         )
 
-    def exercise_exists_in_day(self, routine_id: int, day: DiaSemanaEnum, exercise_id: int, exclude_id: int | None = None) -> bool:
+    def exercise_exists_in_day(self, routine_id: int, day: DiaSemanaEnum | str, exercise_id: int, exclude_id: int | None = None) -> bool:
         query = self.db.query(RoutineExercise).filter(
             RoutineExercise.routine_id == routine_id,
-            RoutineExercise.day == day.value,
+            RoutineExercise.day == _day_value(day),
             RoutineExercise.exercise_id == exercise_id,
         )
         if exclude_id is not None:
             query = query.filter(RoutineExercise.id != exclude_id)
         return query.first() is not None
 
-    def position_exists_in_day(self, routine_id: int, day: DiaSemanaEnum, position: int, exclude_id: int | None = None) -> bool:
+    def position_exists_in_day(self, routine_id: int, day: DiaSemanaEnum | str, position: int, exclude_id: int | None = None) -> bool:
         query = self.db.query(RoutineExercise).filter(
             RoutineExercise.routine_id == routine_id,
-            RoutineExercise.day == day,
+            RoutineExercise.day == _day_value(day),
             RoutineExercise.position == position,
         )
         if exclude_id is not None:

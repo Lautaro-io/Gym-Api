@@ -34,7 +34,7 @@ def get_routine_exercises(id: int, current_user: User = Depends(get_current_user
     routine_exercise_service = RoutineExerciseService(
         RoutineExerciseRepository(db), RoutineRepository(db), ExerciseRepository(db)
     )
-    return routine_exercise_service.get_routine_exercises(id)
+    return routine_exercise_service.get_routine_exercises(id, current_user)
 
 
 @router.patch("/{id}/exercises/{re_id}", response_model=RoutineExerciseResponse)

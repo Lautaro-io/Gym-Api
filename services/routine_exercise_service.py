@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 
-from models import RoutineExercise
+from models import RoutineExercise, User
+from models.user_model import RolEnum
 from repositories.exercise_repository import ExerciseRepository
 from repositories.routine_exercise_repository import RoutineExerciseRepository
 from repositories.routine_repository import RoutineRepository
@@ -39,10 +40,12 @@ class RoutineExerciseService:
         routine_exercise = RoutineExercise(routine_id=routine_id, **routine_data.model_dump())
         return self.routine_exercise_repository.create_routine_exercise(routine_exercise)
 
-    def get_routine_exercises(self, routine_id: int) -> list[RoutineExercise]:
+    def get_routine_exercises(self, routine_id: int, current_user: User) -> list[RoutineExercise]:
         routine = self.routine_repository.get_by_id(routine_id)
         if not routine:
             raise HTTPException(status_code=404, detail="Routine not found")
+        if routine.user_id != current_user.id and current_user.rol not in [RolEnum.PROFESOR, RolEnum.ADMIN]:
+            raise HTTPException(status_code=403, detail="No tenés permisos para ver esta rutina")
         return self.routine_exercise_repository.get_by_routine_id(routine_id)
 
 

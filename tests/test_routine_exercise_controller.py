@@ -182,6 +182,23 @@ def test_update_routine_exercise(client):
     assert response.json()["repetitions"] == "12"
 
 
+def test_update_solo_exercise_id(client):
+    # 1. Creamos un renglón y un segundo ejercicio
+    rutina = _crear_rutina(client)
+    ejercicio2 = _crear_ejercicio(client, "Remo con barra")
+    creado = client.post(f"/routines/{rutina}/exercises", json=_payload())
+
+    # 2. Cambiamos solo el ejercicio, sin enviar "day"
+    response = client.patch(
+        f"/routines/{rutina}/exercises/{creado.json()['id']}", json={"exercise_id": ejercicio2}
+    )
+
+    # 3. Comprobamos que actualiza sin 500 y conserva el día
+    assert response.status_code == 200
+    assert response.json()["exercise_id"] == ejercicio2
+    assert response.json()["day"] == "lunes"
+
+
 def test_update_posicion_ocupada(client):
     # 1. Creamos dos renglones en el lunes, posiciones 1 y 2
     rutina = _crear_rutina(client)

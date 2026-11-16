@@ -12,7 +12,7 @@ from controllers import (
 )
 from db import init_db
 
-app = FastAPI()
+app = FastAPI(title="Gym API", description="API para gestionar el gimnasio", version="1.0.0")
 
 init_db()
 
@@ -31,6 +31,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 @app.get("/")
 def root():
     return {"message": "Api funcionando"}
